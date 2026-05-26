@@ -8,8 +8,9 @@ from .ui.impedance_tab import ImpedanceTab
 from .ui.link_budget_tab import LinkBudgetTab
 from .ui.transmission_line_tab import TransmissionLineTab
 from .ui.converter_tab import ConverterTab
-from .ui.bands_tab import BandsTab
 from .ui.system_tab import SystemTab
+from .ui.rx_tab import RxTab
+from .ui.bands_tab import BandsTab
 from .ui.data_rate_tab import DataRateTab
 
 
@@ -58,16 +59,16 @@ class RFCalculatorApp:
         self.notebook.add(self.impedance_tab, text='  阻抗匹配 & Smith圆图  ')
 
         self.link_budget_tab = LinkBudgetTab(self.notebook)
-        self.notebook.add(self.link_budget_tab, text='  链路预算 & 级联噪声  ')
+        self.notebook.add(self.link_budget_tab, text='  空间损耗和链路预算  ')
 
         self.tl_tab = TransmissionLineTab(self.notebook)
         self.notebook.add(self.tl_tab, text='  传输线 & PCB计算  ')
 
-        self.converter_tab = ConverterTab(self.notebook)
-        self.notebook.add(self.converter_tab, text='  单位换算  ')
-
         self.system_tab = SystemTab(self.notebook)
-        self.notebook.add(self.system_tab, text='  系统分析  ')
+        self.notebook.add(self.system_tab, text='  发射机计算  ')
+
+        self.rx_tab = RxTab(self.notebook)
+        self.notebook.add(self.rx_tab, text='  接收机计算  ')
 
         self.bands_tab = BandsTab(self.notebook)
         self.notebook.add(self.bands_tab, text='  频段速查  ')
@@ -75,26 +76,31 @@ class RFCalculatorApp:
         self.data_rate_tab = DataRateTab(self.notebook)
         self.notebook.add(self.data_rate_tab, text='  速率计算  ')
 
+        self.converter_tab = ConverterTab(self.notebook)
+        self.notebook.add(self.converter_tab, text='  单位换算  ')
+
     def _build_statusbar(self):
         bar = ttk.Frame(self.root, padding=(15, 6))
         bar.pack(side='bottom', fill='x')
         ttk.Label(bar, text='RF Calculator v2.0  |  Python + ttkbootstrap + Matplotlib',
                   font=('Segoe UI', 8), bootstyle='secondary').pack(side='left')
-        ttk.Label(bar, text='阻抗匹配 | 链路预算 | 微带线 | 单位换算 | 系统分析 | 频段速查 | 速率计算',
+        ttk.Label(bar, text='阻抗匹配 | 空间损耗 | 传输线 | 发射机 | 接收机 | 频段 | 速率 | 单位换算',
                   font=('Segoe UI', 8), bootstyle='secondary').pack(side='right')
 
     def _show_about(self):
         import tkinter.messagebox as mb
         mb.showinfo('关于 RF Calculator',
-                    'RF Calculator v2.0\n\n'
+                    'RF Calculator v2.1\n\n'
                     '手机射频计算工具箱\n\n'
                     '功能模块:\n'
                     '  1. 阻抗匹配 & Smith圆图\n'
-                    '  2. 链路预算 & 噪声级联\n'
+                    '  2. 空间损耗和链路预算\n'
                     '  3. 传输线 & PCB计算\n'
                     '  4. 单位换算\n'
-                    '  5. 系统分析 (IIP3/Desense/PAE)\n'
-                    '  6. 3GPP NR/LTE 频段速查\n\n'
+                    '  5. 发射机计算 (IIP3/PAPR/ACLR/谐波)\n'
+                    '  6. 接收机计算 (NF级联/灵敏度/Desense)\n'
+                    '  7. 3GPP NR/LTE 频段速查\n'
+                    '  8. WiFi/LTE/NR 速率计算\n\n'
                     'Build with Python + ttkbootstrap + Matplotlib')
 
     def run(self):

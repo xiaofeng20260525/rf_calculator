@@ -185,7 +185,7 @@ class DataRateTab(ttk.Frame):
         self.nr_layers = ttk.StringVar(value='4')
         ttk.Label(gf2, text='MIMO层数:', width=12, anchor='e').grid(row=2, column=0, sticky='e', padx=3, pady=3)
         ttk.Combobox(gf2, textvariable=self.nr_layers,
-                     values=['1', '2', '4'], width=8, state='readonly').grid(
+                     values=['1', '2', '4', '8'], width=8, state='readonly').grid(
             row=2, column=1, sticky='w', padx=3, pady=3)
 
         self.nr_scs = ttk.StringVar(value='30')
