@@ -99,11 +99,11 @@ def microstrip_width(z0_target, h, er, t=0):
 def stripline_impedance(w, h, er):
     """Calculate symmetric stripline characteristic impedance.
 
-    Uses Cohn's model (accurate).
+    Uses Cohn's model. b = 2h where h = distance from trace to one ground plane.
 
     Parameters:
         w: trace width
-        h: total substrate height (ground-to-ground)
+        h: substrate height (trace-to-ground, half of total ground spacing)
         er: dielectric constant
     Returns:
         Z0 in ohms
@@ -111,15 +111,15 @@ def stripline_impedance(w, h, er):
     if w <= 0 or h <= 0:
         return 0
 
-    wh = w / h
+    b = 2 * h       # total ground-to-ground spacing
+    wb = w / b      # W/b ratio
 
-    if wh < 0.35:
-        # Narrow strip approximation
-        z0 = 60 / math.sqrt(er) * math.log(4 * h / (math.pi * w))
+    if wb < 0.35:
+        # Narrow strip: Z0 = 60/sqrt(er) * ln(8h/pi*W)
+        z0 = 60 / math.sqrt(er) * math.log(8 * h / (math.pi * w))
     else:
-        # Wide strip approximation
-        x = math.pi * wh / 2
-        z0 = 94.15 / (math.sqrt(er) * (wh + 0.441))
+        # Wide strip: Z0 = 94.15 / [sqrt(er) * (W/(2h) + 0.441)]
+        z0 = 94.15 / (math.sqrt(er) * (w / (2 * h) + 0.441))
 
     return z0
 
@@ -127,13 +127,14 @@ def stripline_impedance(w, h, er):
 def stripline_width(z0_target, h, er):
     """Calculate stripline width for target impedance.
 
+    h = distance from trace to one ground plane (half of total ground spacing).
     Returns width in same units as h.
     """
     if z0_target <= 0:
         return 0
 
-    w_min, w_max = h * 0.01, h * 10
-    w_guess = h / 2
+    w_min, w_max = h * 0.01, h * 20
+    w_guess = h
 
     for _ in range(50):
         z0_guess = stripline_impedance(w_guess, h, er)
@@ -356,8 +357,8 @@ def stripline_conductor_loss(w_mm, h_mm, z0_ohm, freq_hz, conductivity=5.8e7,
                               roughness_um=0.4):
     """Calculate stripline conductor loss per unit length.
 
-    Similar to microstrip but with different geometry factor:
-    αc = 8.686 * Rs / (2 * Z₀ * W_eff) * (1 + 2W/(π*h))  (approx)
+    h = distance from trace to one ground plane (half of total ground spacing b).
+    αc = 8.686 * Rs / (2 * Z₀ * W_eff) * [1 + 2W/(π*b)]  where b = 2h
 
     Returns (alpha_c_db_per_mm, alpha_c_db_per_cm).
     """
@@ -369,8 +370,8 @@ def stripline_conductor_loss(w_mm, h_mm, z0_ohm, freq_hz, conductivity=5.8e7,
     w_eff_m = max(w_mm, 0.01) * 1e-3
     h_m = h_mm * 1e-3
 
-    # Stripline geometry correction
-    geo_factor = 1 + 2 * w_eff_m / (math.pi * h_m) if h_m > 0 else 1
+    # Stripline geometry correction: W/(π*h) where b=2h
+    geo_factor = 1 + w_eff_m / (math.pi * h_m) if h_m > 0 else 1
     alpha_np_per_m = Rs_c / (2 * z0_ohm * w_eff_m) * geo_factor
     alpha_db_per_m = 8.686 * alpha_np_per_m
 

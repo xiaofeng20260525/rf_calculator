@@ -95,29 +95,32 @@ def _l_match_solution(zl, z0, w, solutions, shunt_first):
                 })
         else:
             # R_L > Z0: series-first topology
+            # Xs = ±(Q × Z₀), XL absorbed into shunt branch
             q = math.sqrt(rl / z0 - 1)
-            xs_mirror = -xl
-            bp_mirror = q / rl
+            xs = q * z0  # series reactance magnitude
+            # Absorb XL into shunt susceptance: Bp' = Q/RL + BL
+            zl_abs2 = rl**2 + xl**2
+            bl = -xl / zl_abs2 if zl_abs2 > 0 else 0
+            bp = q / rl + bl  # shunt susceptance with XL absorbed
 
-            # For series-first, we reverse: shunt is on source side
-            if xs_mirror > 0:
-                ls = xs_mirror / w
-                solutions.append({
-                    'topology': 'L-match (series-first, low-pass)',
-                    'series': ('L', ls),
-                    'shunt': ('C', bp_mirror / w) if bp_mirror > 0 else ('L', -1 / (bp_mirror * w)),
-                    'series_value': f'{ls * 1e9:.2f} nH',
-                    'shunt_value': f'{bp_mirror / w * 1e12:.2f} pF',
-                })
-            else:
-                cs = -1 / (xs_mirror * w)
-                solutions.append({
-                    'topology': 'L-match (series-first, high-pass)',
-                    'series': ('C', cs),
-                    'shunt': ('L', -1 / (bp_mirror * w)) if bp_mirror < 0 else ('C', bp_mirror / w),
-                    'series_value': f'{cs * 1e12:.2f} pF',
-                    'shunt_value': f'{-1 / (bp_mirror * w) * 1e9:.2f} nH',
-                })
+            # Positive series -> inductor, negative -> capacitor
+            # Generate both solutions (L then C, C then L)
+            ls = xs / w
+            solutions.append({
+                'topology': 'L-match (series-first, Low-Pass)',
+                'series': ('L', ls),
+                'shunt': ('C', bp / w) if bp > 0 else ('L', -1 / (bp * w)),
+                'series_value': f'{ls * 1e9:.2f} nH',
+                'shunt_value': f'{bp / w * 1e12:.2f} pF' if bp > 0 else f'{-1 / (bp * w) * 1e9:.2f} nH',
+            })
+            cs = -1 / (-xs * w)
+            solutions.append({
+                'topology': 'L-match (series-first, High-Pass)',
+                'series': ('C', cs),
+                'shunt': ('L', -1 / (bp * w)) if bp < 0 else ('C', bp / w),
+                'series_value': f'{cs * 1e12:.2f} pF',
+                'shunt_value': f'{-1 / (bp * w) * 1e9:.2f} nH' if bp < 0 else f'{bp / w * 1e12:.2f} pF',
+            })
     except (ValueError, ZeroDivisionError):
         pass
 

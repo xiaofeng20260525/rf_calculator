@@ -1,5 +1,6 @@
 """RF Calculator - Main application window with ttkbootstrap modern theme."""
 
+import os
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 import tkinter as tk
@@ -40,6 +41,8 @@ class RFCalculatorApp:
         help_menu = tk.Menu(menubar, tearoff=0, bg='#2b3e50', fg='#dfe4ea',
                             activebackground='#375a7f')
         menubar.add_cascade(label=' 帮助 ', menu=help_menu)
+        help_menu.add_command(label=' 计算公式文档 ', command=self._show_docs)
+        help_menu.add_separator()
         help_menu.add_command(label=' 关于 RF Calculator ', command=self._show_about)
 
     def _build_header(self):
@@ -82,7 +85,7 @@ class RFCalculatorApp:
     def _build_statusbar(self):
         bar = ttk.Frame(self.root, padding=(15, 6))
         bar.pack(side='bottom', fill='x')
-        ttk.Label(bar, text='RF Calculator v2.0  |  Python + ttkbootstrap + Matplotlib',
+        ttk.Label(bar, text='RF Calculator v2.5  |  Python + ttkbootstrap + Matplotlib',
                   font=('Segoe UI', 8), bootstyle='secondary').pack(side='left')
         ttk.Label(bar, text='阻抗匹配 | 空间损耗 | 传输线 | 发射机 | 接收机 | 频段 | 速率 | 单位换算',
                   font=('Segoe UI', 8), bootstyle='secondary').pack(side='right')
@@ -102,6 +105,21 @@ class RFCalculatorApp:
                     '  7. 3GPP NR/LTE 频段速查\n'
                     '  8. WiFi/LTE/NR 速率计算\n\n'
                     'Build with Python + ttkbootstrap + Matplotlib')
+
+    def _show_docs(self):
+        """Open documentation PDF with system default viewer."""
+        import sys
+        import subprocess
+        pdf_path = None
+        if getattr(sys, 'frozen', False):
+            pdf_path = os.path.join(sys._MEIPASS, 'RF_Calculator_v2.5.pdf')
+        if not pdf_path or not os.path.exists(pdf_path):
+            pdf_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'RF_Calculator_v2.5.pdf')
+        if os.path.exists(pdf_path):
+            os.startfile(pdf_path)
+        else:
+            import tkinter.messagebox as mb
+            mb.showwarning('文档', 'RF_Calculator_v2.5.pdf 未找到。')
 
     def run(self):
         self.root.mainloop()

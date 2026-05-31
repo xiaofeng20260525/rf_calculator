@@ -45,30 +45,31 @@ def oip3_cascade(iip3_list_dbm, gain_list_db):
     return iip3 + total_gain
 
 
-def imd_level(pout_dbm, iip3_dbm):
-    """Calculate IMD3 level given output power and IIP3.
+def imd_level(pout_dbm, oip3_dbm):
+    """Calculate IMD3 level at output given output power and OIP3.
 
-    P_IMD3 = 3*P_out - 2*IIP3
+    P_IMD3 = 3*P_out - 2*OIP3
+    OIP3 = IIP3 + Gain (all in dBm)
     Returns IMD3 level in dBm.
     """
-    return 3 * pout_dbm - 2 * iip3_dbm
+    return 3 * pout_dbm - 2 * oip3_dbm
 
 
-def imd_to_carrier_ratio(pout_dbm, iip3_dbm):
+def imd_to_carrier_ratio(pout_dbm, oip3_dbm):
     """Calculate IMD3-to-carrier ratio (dBc).
 
-    C/I ratio = 2*(IIP3 - P_out)
+    C/I ratio = 2*(OIP3 - P_out)
     """
-    return 2 * (iip3_dbm - pout_dbm)
+    return 2 * (oip3_dbm - pout_dbm)
 
 
-def icpr_estimate(iip3_dbm, pout_dbm, papr_db=8.5):
-    """Estimate ACLR/ACPR from IIP3.
+def icpr_estimate(oip3_dbm, pout_dbm, papr_db=8.5):
+    """Estimate ACLR/ACPR from OIP3.
 
-    ACLR ≈ 2*(IIP3 - P_out) + PAPR_correction
+    ACLR ≈ 2*(OIP3 - P_out) + PAPR_correction
     (Rough estimate, actual depends on PA nonlinearity profile)
     """
-    return 2 * (iip3_dbm - pout_dbm) + papr_db * 0.85
+    return 2 * (oip3_dbm - pout_dbm) + papr_db * 0.85
 
 
 # ==================== Desense / Isolation ====================
@@ -332,26 +333,24 @@ ACLR_SPECS = {
 }
 
 
-def aclr_estimate_from_iip3(pout_dbm_per_antenna, iip3_dbm, papr_db=8.5, pa_count=1):
-    """Estimate ACLR from PA IIP3 (approximate, empirical).
+def aclr_estimate_from_oip3(pout_dbm_per_antenna, oip3_dbm, papr_db=8.5, pa_count=1):
+    """Estimate ACLR from PA OIP3 (approximate, empirical).
 
-    ACLR ≈ 10*log10( (3*Pout^3/(2*IIP3)^2) / (kT*B*F) )  simplified
-
-    More practical estimate based on PA nonlinearity:
-    ACLR ≈ 2*(IIP3 - Pout) - PAPR_correction
+    ACLR ≈ 2*(OIP3 - Pout) - PAPR_correction
+    OIP3 = IIP3 + Gain
 
     For multi-antenna: ACLR improves by 10*log10(N_ant)
 
     Parameters:
         pout_dbm_per_antenna: output power per antenna in dBm
-        iip3_dbm: PA IIP3 in dBm
+        oip3_dbm: PA OIP3 in dBm
         papr_db: signal PAPR in dB
         pa_count: number of PA/antenna paths (improves ACLR)
     Returns:
         estimated ACLR in dBc (more negative = better)
     """
-    # Basic estimate from IIP3 backoff
-    aclr = 2 * (iip3_dbm - pout_dbm_per_antenna) - papr_db * 1.2
+    # Basic estimate from OIP3 backoff
+    aclr = 2 * (oip3_dbm - pout_dbm_per_antenna) - papr_db * 1.2
 
     # Multi-antenna improvement
     if pa_count > 1:

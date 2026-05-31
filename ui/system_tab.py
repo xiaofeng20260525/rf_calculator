@@ -10,7 +10,7 @@ from ..calculators.rf_system import (
     papr, pa_efficiency, drain_efficiency, crest_factor,
     duty_cycle_avg_power, pa_current,
     harmonic_frequencies, harmonic_power, harmonic_path_loss,
-    aclr_estimate_from_iip3, aclr_budget,
+    aclr_estimate_from_oip3, aclr_budget,
 )
 
 LW = 20; EW = 13
@@ -130,7 +130,7 @@ class SystemTab(ttk.Frame):
     def _build_aclr(self, r, c):
         p = self._panel(r, c, 'ACLR 预算计算', 'primary')
         self._row(p, 'PA 输出功率 (dBm):', 'aclr_pout', '23')
-        self._row(p, 'PA IIP3 (dBm):',     'aclr_iip3', '30')
+        self._row(p, 'PA OIP3 (dBm):',     'aclr_oip3', '30')
         self._row(p, 'PA ACLR (dBc):',      'aclr_pa',   '-35')
         self._row(p, 'PAPR (dB):',          'aclr_papr', '8.5')
         self._sep_btn(p, '计算 ACLR', self._calc_aclr)
@@ -195,13 +195,13 @@ class SystemTab(ttk.Frame):
         self.hm_result.insert('end','  3GPP UE Limit: -30 dBm')
 
     def _calc_aclr(self):
-        try: pout=float(self.aclr_pout.get()); iip3=float(self.aclr_iip3.get()); pa=float(self.aclr_pa.get()); papr_db=float(self.aclr_papr.get())
+        try: pout=float(self.aclr_pout.get()); oip3=float(self.aclr_oip3.get()); pa=float(self.aclr_pa.get()); papr_db=float(self.aclr_papr.get())
         except ValueError: messagebox.showerror('Error','无效'); return
-        est=aclr_estimate_from_iip3(pout,iip3,papr_db); b=aclr_budget(pout,pa)
+        est=aclr_estimate_from_oip3(pout,oip3,papr_db); b=aclr_budget(pout,pa)
         self.aclr_result.delete('1.0','end')
         self.aclr_result.insert('end',
             f'  PA Pout       = {pout:.1f} dBm\n'
-            f'  PA IIP3       = {iip3:.1f} dBm\n'
+            f'  PA OIP3       = {oip3:.1f} dBm\n'
             f'  ACLR(est)     ~ {est:.1f} dBc\n'
             f'  PA ACLR       = {pa:.1f} dBc\n'
             f'  TX ACLR(total)= {b["total_aclr_dbc"]:.1f} dBc\n'
